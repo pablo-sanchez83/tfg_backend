@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import update_last_login
 from django.contrib.auth.hashers import make_password
 from rest_framework.exceptions import PermissionDenied
-
+from django.db import transaction
 
 GENERIC_ERROR = 'No tienes permisos para realizar esta accion.'
 # Create your views here.
@@ -31,12 +31,14 @@ def login(request):
 def signup(request):
     serializer = UsuariosSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        user = Usuarios.objects.get(email=request.data['email'])
-        user.set_password(request.data['password'])
-        user.save()
-        token = Token.objects.create(user=user)
-        return Response({'token': token.key, 'user' : serializer.data}, status=status.HTTP_201_CREATED)
+        with transaction.atomic():
+            user = serializer.save()
+            # Asegúrate de que la contraseña se haya seteado correctamente
+            user.set_password(request.data['password'])
+            user.save()
+            # Crear el token para el usuario
+            token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])

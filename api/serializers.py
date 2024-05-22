@@ -5,6 +5,16 @@ class UsuariosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuarios
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'tel', 'rol', 'last_login', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Eliminar la contraseña del diccionario validado antes de crear el usuario
+        password = validated_data.pop('password')
+        user = Usuarios.objects.create(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
 
 class EmpresasSerializer(serializers.ModelSerializer):
     usuario = UsuariosSerializer
