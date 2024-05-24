@@ -17,11 +17,10 @@ class UsuariosSerializer(serializers.ModelSerializer):
 
 
 class EmpresasSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializer
+    usuario = UsuariosSerializer(read_only=True)
     class Meta:
         model = Empresas
         fields = ['id', 'nombre', 'confirmado', 'usuario', 'localNum']
-        read_only_fields = ['usuario']
 
 class CategoriasCulinariasSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,14 +28,14 @@ class CategoriasCulinariasSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre', 'descripcion']
 class UsuariosEmpresasSerializer(serializers.ModelSerializer):
     empresa = EmpresasSerializer
-    usuario = UsuariosSerializer
+    usuario = UsuariosSerializer(read_only=True)
     class Meta:
         model = Usuarios
         fields = ['id', 'usuario', 'empresa']
         read_only_fields = ['empresa', 'usuario']
 
 class LocalesSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializer
+    usuario = UsuariosSerializer(read_only=True)
     empresa = EmpresasSerializer
     categoria_culinaria = CategoriasCulinariasSerializer
 
@@ -68,7 +67,7 @@ class TramosHorariosSerializer(serializers.ModelSerializer):
         fields = ['id', 'local', 'h_inicio', 'h_final', 'nombre', 'clientes_maximos']
 
 class ReservasSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializer
+    usuario = UsuariosSerializer(read_only=True)
     local = LocalesSerializer
     tramo_horario = TramosHorariosSerializer
 
@@ -77,7 +76,7 @@ class ReservasSerializer(serializers.ModelSerializer):
         fields = ['id', 'usuario', 'local', 'fecha', 'tramo_horario', 'hora', 'estado', 'numero_personas']
 
 class ComentariosSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializer
+    usuario = UsuariosSerializer(read_only=True)
     local = LocalesSerializer
 
     class Meta:
