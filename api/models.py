@@ -11,8 +11,8 @@ class Usuarios(AbstractUser, PermissionsMixin):
         ENCARGADO = 3, 'Encargado'
         EMPRESARIO = 4, 'Empresario'
     phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$',
-        message="El número de teléfono debe ingresarse en el formato: '+999999999'. Hasta 15 dígitos permitidos."
+    regex=r'^\+?(\d{1,3}[- ]?)?\d{10}$',
+    message="El número de teléfono debe ingresarse en el formato: '+9999999999'. Hasta 15 dígitos permitidos."
     )
     email = models.EmailField(unique=True)
     tel = models.CharField(validators=[phone_regex, MinLengthValidator(10), MaxLengthValidator(15)], max_length=16)
