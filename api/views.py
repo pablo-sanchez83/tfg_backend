@@ -11,6 +11,7 @@ from django.contrib.auth.models import update_last_login
 from django.contrib.auth.hashers import make_password
 from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import JsonResponse
 
 GENERIC_ERROR = 'No tienes permisos para realizar esta accion.'
 # Create your views here.
@@ -50,6 +51,32 @@ def logout(request):
     except Token.DoesNotExist:
         return Response({'result':'Token no encontrado'},status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+def get_locales(request):
+    locales = Locales.objects.all()
+    locales_list = []
+    for local in locales:
+        fotos = Fotos_Locales.objects.filter(local=local)
+        fotos_list = [{'id': foto.id, 'imagen': foto.imagen.url} for foto in fotos]
+        locales_list.append({
+            'id': local.id,
+            'nombre': local.nombre,
+            'direccion': local.direccion,
+            'categoria_culinaria': {
+                'id': local.categoria_culinaria.id,
+                'nombre': local.categoria_culinaria.nombre,
+                'descripcion': local.categoria_culinaria.descripcion
+            } if local.categoria_culinaria else None,
+            'empresa': {
+                'id': local.empresa.id,
+                'nombre': local.empresa.nombre,
+                'confirmado': local.empresa.confirmado,
+                'usuario': local.empresa.usuario.id,
+                'localNum': local.empresa.locales.count()
+            } if local.empresa else None,
+            'fotos': fotos_list
+        })
+    return JsonResponse(locales_list, safe=False)
 # Usuarios
 class ListUsers(generics.ListCreateAPIView):
     serializer_class = UsuariosSerializer
@@ -240,11 +267,9 @@ class DetailedCategoriasCulinarias(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied(GENERIC_ERROR)
 
 # Locales
-class ListLocales(generics.ListCreateAPIView):
-    serializer_class = LocalesSerializer
+class ListLocales(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    def get_queryset(self):
-        return Locales.objects.all()
+    serializer_class = LocalesSerializer
     def perform_create(self, serializer):
         if self.request.user.is_superuser or self.request.user.rol == 4:
             empresa = get_object_or_404(Empresas, usuario=self.request.user)
