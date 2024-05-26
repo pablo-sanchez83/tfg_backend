@@ -55,7 +55,7 @@ class Locales(models.Model):
     categoria_culinaria = models.ForeignKey(Categorias_Culinarias, on_delete=models.CASCADE,related_name='locales', null=True)
     empresa = models.ForeignKey(Empresas, on_delete=models.CASCADE, related_name='locales', null=True)
 
-    REQUIRED_FIELDS = ['nombre', 'direccion', 'categoria_culinaria']
+    REQUIRED_FIELDS = ['nombre', 'direccion', 'categoria_culinaria', 'empresa']
 
     def __str__(self):
         return self.nombre
