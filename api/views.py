@@ -267,7 +267,7 @@ class DetailedCategoriasCulinarias(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied(GENERIC_ERROR)
 
 # Locales
-class ListLocales(generics.CreateAPIView):
+class CrearLocales(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LocalesSerializer
     def perform_create(self, serializer):

@@ -11,6 +11,7 @@ urlpatterns = [
     path('categorias_culinarias', ListCategoriasCulinarias.as_view(), name='categorias-culinarias-list'),
     path('categoria_culinaria/<int:pk>', DetailedCategoriasCulinarias.as_view(), name='categorias-culinarias-detail'),
     path('locales', get_locales, name='locales-list'),
+    path('crear_local', CrearLocales.as_view(), name='locales-create'),
     path('local/<int:pk>', DetailedLocales.as_view(), name='locales-detail'),
     path('horarios', ListHorarios.as_view(), name='horarios-list'),
     path('horario/<int:pk>/local/<int:local>', DetailedHorarios.as_view(), name='horarios-detail'),
