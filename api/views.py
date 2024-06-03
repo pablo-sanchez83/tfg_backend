@@ -1,7 +1,7 @@
 from .models import *
 from .serializers import *
 from rest_framework import generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework import status
@@ -337,6 +337,7 @@ def get_local(request, id):
 
 # Usuarios
 @api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated])
 def mi_usuario(request):
     if request.method == "GET":
         user = request.user
@@ -344,9 +345,23 @@ def mi_usuario(request):
         return Response(serializer.data)
     elif request.method == "PATCH":
         user = request.user
-        serializer = UsuariosSerializer(
-            user, data=request.data, partial=True
-        )  # partial=True permite actualizar parcialmente
+        data = request.data
+
+        if "old_password" in data and "password" in data and "password_confirm" in data:
+            old_password = data.get("old_password")
+            new_password = data.get("password")
+            password_confirm = data.get("password_confirm")
+
+            if not user.check_password(old_password):
+                return Response({"detail": "La contraseña actual es incorrecta."}, status=status.HTTP_400_BAD_REQUEST)
+            if new_password != password_confirm:
+                return Response({"detail": "Las nuevas contraseñas no coinciden."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.set_password(new_password)
+            user.save()
+            return Response({"detail": "Contraseña actualizada correctamente."})
+
+        serializer = UsuariosSerializer(user, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
