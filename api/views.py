@@ -106,6 +106,42 @@ def get_locales(request):
             }
         )
     return JsonResponse(locales_list, safe=False)
+@api_view(["GET"])
+def get_locales_empresas(request, id):
+    locales = Locales.objects.filter(empresa=id)
+    locales_list = []
+    for local in locales:
+        fotos = Fotos_Locales.objects.filter(local=local)
+        fotos_list = [{"id": foto.id, "imagen": foto.imagen.url} for foto in fotos]
+        locales_list.append(
+            {
+                "id": local.id,
+                "nombre": local.nombre,
+                "direccion": local.direccion,
+                "categoria_culinaria": (
+                    {
+                        "id": local.categoria_culinaria.id,
+                        "nombre": local.categoria_culinaria.nombre,
+                        "descripcion": local.categoria_culinaria.descripcion,
+                    }
+                    if local.categoria_culinaria
+                    else None
+                ),
+                "empresa": (
+                    {
+                        "id": local.empresa.id,
+                        "nombre": local.empresa.nombre,
+                        "confirmado": local.empresa.confirmado,
+                        "usuario": local.empresa.usuario.id,
+                        "localNum": local.empresa.locales.count(),
+                    }
+                    if local.empresa
+                    else None
+                ),
+                "fotos": fotos_list,
+            }
+        )
+    return JsonResponse(locales_list, safe=False)
 
 
 @api_view(["DELETE"])
@@ -148,7 +184,7 @@ def get_mi_local(request):
 
         # Prepare data for the response
         fotos_list = [{'id': foto.id, 'imagen': foto.imagen.url} for foto in fotos]
-        productos_list = [{'id': producto.id, 'nombre': producto.nombre_producto, 'descripcion': producto.descripcion, 'precio': producto.precio, 'categoria': producto.categoria, 'imagen': producto.imagen.url} for producto in productos]
+        productos_list = [{'id': producto.id, 'nombre_producto': producto.nombre_producto, 'descripcion': producto.descripcion, 'precio': producto.precio, 'categoria': producto.categoria, 'imagen': producto.imagen.url} for producto in productos]
         horarios_list = [{'id': horario.id, 'hora_apertura': horario.hora_apertura, 'hora_cierre': horario.hora_cierre, 'dias': {
             'L': horario.L, 'M': horario.M, 'X': horario.X, 'J': horario.J, 'V': horario.V, 'S': horario.S, 'D': horario.D}} for horario in horarios]
         tramos_horarios_list = [{'id': tramo.id, 'h_inicio': tramo.h_inicio, 'h_final': tramo.h_final, 'nombre': tramo.nombre, 'clientes_maximos': tramo.clientes_maximos} for tramo in tramos_horarios]
@@ -194,14 +230,30 @@ def get_local(request, id):
     productos = Productos.objects.filter(local=local)
     horarios = Horarios.objects.filter(local=local)
     tramos_horarios = Tramos_Horarios.objects.filter(local=local)
-    comentarios = Comentarios.objects.filter(local=local)
+    comentarios = Comentarios.objects.filter(local=local, respuesta=False)
+
+    # Helper function to get nested responses
+    def get_respuestas(comentario):
+        respuestas = Comentarios.objects.filter(respuesta_a=comentario)
+        return [
+            {
+                "id": respuesta.id,
+                "usuario": UsuariosSerializer(respuesta.usuario).data,
+                "fecha": respuesta.fecha,
+                "comentario": respuesta.comentario,
+                "estrellas": respuesta.estrellas,
+                "respuesta": respuesta.respuesta,
+                "respuestas": get_respuestas(respuesta)  # Recursive call
+            }
+            for respuesta in respuestas
+        ]
 
     # Prepare data for the response
     fotos_list = [{"id": foto.id, "imagen": foto.imagen.url} for foto in fotos]
     productos_list = [
         {
             "id": producto.id,
-            "nombre": producto.nombre_producto,
+            "nombre_producto": producto.nombre_producto,
             "descripcion": producto.descripcion,
             "precio": producto.precio,
             "categoria": producto.categoria,
@@ -239,11 +291,12 @@ def get_local(request, id):
     comentarios_list = [
         {
             "id": comentario.id,
-            "usuario": comentario.usuario.id,
+            "usuario": UsuariosSerializer(comentario.usuario).data,
             "fecha": comentario.fecha,
             "comentario": comentario.comentario,
             "estrellas": comentario.estrellas,
             "respuesta": comentario.respuesta,
+            "respuestas": get_respuestas(comentario)
         }
         for comentario in comentarios
     ]
@@ -279,6 +332,7 @@ def get_local(request, id):
     }
 
     return JsonResponse(local_return, safe=False)
+
 
 
 # Usuarios
@@ -405,7 +459,7 @@ class ListEmpresas(generics.ListCreateAPIView):
         if self.request.user.rol == 4 or self.request.user.is_superuser:
             empresa_existe = Empresas.objects.filter(usuario=self.request.user).exists()
             if not empresa_existe:
-                serializer.save(usuario=self.request.user, confirmado=False)
+                serializer.save(usuario=self.request.user, confirmado=False, localNum=0)
             else:
                 raise PermissionDenied("Ya tienes una empresa registrada.")
         else:
@@ -887,17 +941,20 @@ class DetailedReservas(generics.RetrieveUpdateDestroyAPIView):
 
 
 # Comentarios
-class ListComentarios(generics.ListCreateAPIView):
-    serializer_class = ComentariosSerializer
 
-    def get_queryset(self):
-        local = Locales.objects.get(id=self.kwargs["local"])
-        return Comentarios.objects.filter(local=local)
+# En la vista CrearComentario
+class CrearComentario(generics.CreateAPIView):
+    serializer_class = ComentariosSerializer
 
     def perform_create(self, serializer):
         usuario = self.request.user
-        local = Locales.objects.get(id=self.request["local"])
-        serializer.save(local=local, usuario=usuario)
+        local = get_object_or_404(Locales, id=self.kwargs["local"])
+        respuesta_a_id = self.request.data.get('respuesta_a')
+        respuesta_a = None
+        if respuesta_a_id:
+            respuesta_a = get_object_or_404(Comentarios, id=respuesta_a_id)
+        serializer.save(local=local, usuario=usuario, respuesta_a=respuesta_a)
+
 
 
 class DetailedComentarios(generics.RetrieveUpdateDestroyAPIView):

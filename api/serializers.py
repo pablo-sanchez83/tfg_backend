@@ -76,7 +76,21 @@ class ReservasSerializer(serializers.ModelSerializer):
 class ComentariosSerializer(serializers.ModelSerializer):
     usuario = UsuariosSerializer
     local = LocalesSerializer
+    respuesta_a = serializers.PrimaryKeyRelatedField(queryset=Comentarios.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Comentarios
-        fields = ['id', 'usuario', 'local', 'fecha', 'comentario', 'estrellas', 'respuesta']
+        fields = ['id', 'usuario', 'local', 'fecha', 'comentario', 'estrellas', 'respuesta', 'respuesta_a']
+
+class ComentariosSerializerAll(serializers.ModelSerializer):
+    usuario = UsuariosSerializer
+    local = LocalesSerializer
+    respuestas = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comentarios
+        fields = ['id', 'usuario', 'local', 'fecha', 'comentario', 'estrellas', 'respuesta', 'respuestas']
+
+    def get_respuestas(self, obj):
+        serializer = ComentariosSerializerAll(obj.respuestas.all(), many=True)
+        return serializer.data

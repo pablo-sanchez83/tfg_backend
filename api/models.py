@@ -110,7 +110,11 @@ class Reservas(models.Model):
 class Comentarios(models.Model):
     usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE, related_name='comentarios')
     local = models.ForeignKey(Locales, on_delete=models.CASCADE)
-    fecha = models.DateField()
+    fecha = models.DateField(auto_now_add=True)
     comentario = models.TextField(blank=True)
     estrellas = models.IntegerField()
     respuesta = models.BooleanField(default=False)
+    respuesta_a = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='respuestas')
+
+    def __str__(self):
+        return self.comentario
