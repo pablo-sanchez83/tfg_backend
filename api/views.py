@@ -12,6 +12,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import JsonResponse
+from django.utils import timezone
 
 GENERIC_ERROR = "No tienes permisos para realizar esta accion."
 # Create your views here.
@@ -106,6 +107,8 @@ def get_locales(request):
             }
         )
     return JsonResponse(locales_list, safe=False)
+
+
 @api_view(["GET"])
 def get_locales_empresas(request, id):
     locales = Locales.objects.filter(empresa=id)
@@ -168,12 +171,14 @@ def delete_local(request, id):
         )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_mi_local(request):
     try:
         local = request.user.locales.first()
         if not local:
-            return Response({'detail': 'Local no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Local no encontrado."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Retrieve related data
         fotos = Fotos_Locales.objects.filter(local=local)
@@ -183,39 +188,92 @@ def get_mi_local(request):
         comentarios = Comentarios.objects.filter(local=local)
 
         # Prepare data for the response
-        fotos_list = [{'id': foto.id, 'imagen': foto.imagen.url} for foto in fotos]
-        productos_list = [{'id': producto.id, 'nombre_producto': producto.nombre_producto, 'descripcion': producto.descripcion, 'precio': producto.precio, 'categoria': producto.categoria, 'imagen': producto.imagen.url} for producto in productos]
-        horarios_list = [{'id': horario.id, 'hora_apertura': horario.hora_apertura, 'hora_cierre': horario.hora_cierre, 'dias': {
-            'L': horario.L, 'M': horario.M, 'X': horario.X, 'J': horario.J, 'V': horario.V, 'S': horario.S, 'D': horario.D}} for horario in horarios]
-        tramos_horarios_list = [{'id': tramo.id, 'h_inicio': tramo.h_inicio, 'h_final': tramo.h_final, 'nombre': tramo.nombre, 'clientes_maximos': tramo.clientes_maximos} for tramo in tramos_horarios]
-        comentarios_list = [{'id': comentario.id, 'usuario': comentario.usuario.id, 'fecha': comentario.fecha, 'comentario': comentario.comentario, 'estrellas': comentario.estrellas, 'respuesta': comentario.respuesta} for comentario in comentarios]
+        fotos_list = [{"id": foto.id, "imagen": foto.imagen.url} for foto in fotos]
+        productos_list = [
+            {
+                "id": producto.id,
+                "nombre_producto": producto.nombre_producto,
+                "descripcion": producto.descripcion,
+                "precio": producto.precio,
+                "categoria": producto.categoria,
+                "imagen": producto.imagen.url,
+            }
+            for producto in productos
+        ]
+        horarios_list = [
+            {
+                "id": horario.id,
+                "hora_apertura": horario.hora_apertura,
+                "hora_cierre": horario.hora_cierre,
+                "dias": {
+                    "L": horario.L,
+                    "M": horario.M,
+                    "X": horario.X,
+                    "J": horario.J,
+                    "V": horario.V,
+                    "S": horario.S,
+                    "D": horario.D,
+                },
+            }
+            for horario in horarios
+        ]
+        tramos_horarios_list = [
+            {
+                "id": tramo.id,
+                "h_inicio": tramo.h_inicio,
+                "h_final": tramo.h_final,
+                "nombre": tramo.nombre,
+                "clientes_maximos": tramo.clientes_maximos,
+            }
+            for tramo in tramos_horarios
+        ]
+        comentarios_list = [
+            {
+                "id": comentario.id,
+                "usuario": comentario.usuario.id,
+                "fecha": comentario.fecha,
+                "comentario": comentario.comentario,
+                "estrellas": comentario.estrellas,
+                "respuesta": comentario.respuesta,
+            }
+            for comentario in comentarios
+        ]
 
         local_return = {
-            'id': local.id,
-            'nombre': local.nombre,
-            'direccion': local.direccion,
-            'categoria_culinaria': {
-                'id': local.categoria_culinaria.id,
-                'nombre': local.categoria_culinaria.nombre,
-                'descripcion': local.categoria_culinaria.descripcion
-            } if local.categoria_culinaria else None,
-            'empresa': {
-                'id': local.empresa.id,
-                'nombre': local.empresa.nombre,
-                'confirmado': local.empresa.confirmado,
-                'localNum': local.empresa.locales.count()
-            } if local.empresa else None,
-            'fotos': fotos_list,
-            'productos': productos_list,
-            'horarios': horarios_list,
-            'tramos_horarios': tramos_horarios_list,
-            'comentarios': comentarios_list
+            "id": local.id,
+            "nombre": local.nombre,
+            "direccion": local.direccion,
+            "categoria_culinaria": (
+                {
+                    "id": local.categoria_culinaria.id,
+                    "nombre": local.categoria_culinaria.nombre,
+                    "descripcion": local.categoria_culinaria.descripcion,
+                }
+                if local.categoria_culinaria
+                else None
+            ),
+            "empresa": (
+                {
+                    "id": local.empresa.id,
+                    "nombre": local.empresa.nombre,
+                    "confirmado": local.empresa.confirmado,
+                    "localNum": local.empresa.locales.count(),
+                }
+                if local.empresa
+                else None
+            ),
+            "fotos": fotos_list,
+            "productos": productos_list,
+            "horarios": horarios_list,
+            "tramos_horarios": tramos_horarios_list,
+            "comentarios": comentarios_list,
         }
 
         return Response(local_return, status=status.HTTP_200_OK)
     except Locales.DoesNotExist:
-        return Response({'detail': 'Local no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-
+        return Response(
+            {"detail": "Local no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 @api_view(["GET"])
@@ -243,7 +301,7 @@ def get_local(request, id):
                 "comentario": respuesta.comentario,
                 "estrellas": respuesta.estrellas,
                 "respuesta": respuesta.respuesta,
-                "respuestas": get_respuestas(respuesta)  # Recursive call
+                "respuestas": get_respuestas(respuesta),  # Recursive call
             }
             for respuesta in respuestas
         ]
@@ -296,7 +354,7 @@ def get_local(request, id):
             "comentario": comentario.comentario,
             "estrellas": comentario.estrellas,
             "respuesta": comentario.respuesta,
-            "respuestas": get_respuestas(comentario)
+            "respuestas": get_respuestas(comentario),
         }
         for comentario in comentarios
     ]
@@ -334,7 +392,6 @@ def get_local(request, id):
     return JsonResponse(local_return, safe=False)
 
 
-
 # Usuarios
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
@@ -353,10 +410,16 @@ def mi_usuario(request):
             password_confirm = data.get("password_confirm")
 
             if not user.check_password(old_password):
-                return Response({"detail": "La contraseña actual es incorrecta."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "La contraseña actual es incorrecta."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             if new_password != password_confirm:
-                return Response({"detail": "Las nuevas contraseñas no coinciden."}, status=status.HTTP_400_BAD_REQUEST)
-            
+                return Response(
+                    {"detail": "Las nuevas contraseñas no coinciden."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             user.set_password(new_password)
             user.save()
             return Response({"detail": "Contraseña actualizada correctamente."})
@@ -640,7 +703,11 @@ class ListHorarios(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        local_id = self.request.user.locales.first().id if self.request.user.locales.exists() else None
+        local_id = (
+            self.request.user.locales.first().id
+            if self.request.user.locales.exists()
+            else None
+        )
         if local_id:
             return Horarios.objects.filter(local_id=local_id)
         return Horarios.objects.none()
@@ -649,7 +716,9 @@ class ListHorarios(generics.ListCreateAPIView):
         local = self.request.user.locales.first()
         existing_horario = Horarios.objects.filter(local=local).first()
         if existing_horario:
-            serializer = self.get_serializer(existing_horario, data=self.request.data, partial=True)
+            serializer = self.get_serializer(
+                existing_horario, data=self.request.data, partial=True
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
         else:
@@ -789,10 +858,10 @@ class DetailedProductos(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductosSerializer
 
     def get_object(self):
-        local_id = self.kwargs.get('local')
+        local_id = self.kwargs.get("local")
         if local_id:
             local = Locales.objects.get(id=local_id)
-            return get_object_or_404(Productos, local=local, id=self.kwargs['pk'])
+            return get_object_or_404(Productos, local=local, id=self.kwargs["pk"])
         raise PermissionDenied(GENERIC_ERROR)
 
     def delete(self, request, *args, **kwargs):
@@ -854,10 +923,10 @@ class DetailedTramosHorarios(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TramosHorariosSerializer
 
     def get_object(self):
-        local_id = self.kwargs.get('local')
+        local_id = self.kwargs.get("local")
         if local_id:
             local = Locales.objects.get(id=local_id)
-            return get_object_or_404(Tramos_Horarios, local=local, id=self.kwargs['pk'])
+            return get_object_or_404(Tramos_Horarios, local=local, id=self.kwargs["pk"])
         raise PermissionDenied(GENERIC_ERROR)
 
     def delete(self, request, *args, **kwargs):
@@ -897,32 +966,30 @@ class DetailedTramosHorarios(generics.RetrieveUpdateDestroyAPIView):
 
 
 # Reservas
-class ListReservas(generics.ListCreateAPIView):
-    serializer_class = ReservasSerializer
-
-    def get_queryset(self):
-        if self.request.user.rol == 3:
-            local_id = self.kwargs.get("local")
-            if local_id:
-                local = Locales.objects.get(id=local_id)
-                return Reservas.objects.filter(local=local)
-        elif self.request.user.is_superuser:
-            return Reservas.objects.all()
-        else:
-            return Reservas.objects.filter(usuario=self.request.user)
-
-    def perform_create(self, serializer):
-        usuario = self.request.user
-        local_id = self.kwargs.get("local")
-        tramo_horario_id = self.request.data.get("tramo_horario")
-        if local_id and tramo_horario_id:
-            local = Locales.objects.get(id=local_id)
-            tramo_horario = Tramos_Horarios.objects.get(id=tramo_horario_id)
-            serializer.save(
-                local=local, usuario=usuario, tramo_horario=tramo_horario, estado=1
-            )
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_reservas(request, local):
+    if request.user.rol == 3:
+        local = Locales.objects.get(id=local)
+        if request.user == local.usuario:
+            reservas = Reservas.objects.filter(local=local)
+            serializer = ReservasSerializerAll(reservas, many=True)
+            return Response(serializer.data)
         else:
             raise PermissionDenied(GENERIC_ERROR)
+    else:
+        raise PermissionDenied(GENERIC_ERROR)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def crear_reserva(request):
+    serializer = ReservasSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(usuario=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DetailedReservas(generics.RetrieveUpdateDestroyAPIView):
@@ -934,7 +1001,11 @@ class DetailedReservas(generics.RetrieveUpdateDestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         reserva = self.get_object()
-        if self.request.user.rol == 3 or self.request.user.is_superuser or self.request.user == reserva.usuario:
+        if (
+            self.request.user.rol == 3
+            or self.request.user.is_superuser
+            or self.request.user == reserva.usuario
+        ):
             reserva.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -942,20 +1013,29 @@ class DetailedReservas(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         reserva = self.get_object()
-        if self.request.user.rol == 3 or self.request.user.is_superuser or self.request.user == reserva.usuario:
+        if (
+            self.request.user.rol == 3
+            or self.request.user.is_superuser
+            or self.request.user == reserva.usuario
+        ):
             return super().update(request, *args, **kwargs)
         else:
             raise PermissionDenied(GENERIC_ERROR)
 
     def patch(self, request, *args, **kwargs):
         reserva = self.get_object()
-        if self.request.user.rol == 3 or self.request.user.is_superuser or self.request.user == reserva.usuario:
+        if (
+            self.request.user.rol == 3
+            or self.request.user.is_superuser
+            or self.request.user == reserva.usuario
+        ):
             return super().partial_update(request, *args, **kwargs)
         else:
             raise PermissionDenied(GENERIC_ERROR)
 
 
 # Comentarios
+
 
 # En la vista CrearComentario
 class CrearComentario(generics.CreateAPIView):
@@ -964,12 +1044,11 @@ class CrearComentario(generics.CreateAPIView):
     def perform_create(self, serializer):
         usuario = self.request.user
         local = get_object_or_404(Locales, id=self.kwargs["local"])
-        respuesta_a_id = self.request.data.get('respuesta_a')
+        respuesta_a_id = self.request.data.get("respuesta_a")
         respuesta_a = None
         if respuesta_a_id:
             respuesta_a = get_object_or_404(Comentarios, id=respuesta_a_id)
         serializer.save(local=local, usuario=usuario, respuesta_a=respuesta_a)
-
 
 
 class DetailedComentarios(generics.RetrieveUpdateDestroyAPIView):
@@ -1005,7 +1084,7 @@ class DetailedComentarios(generics.RetrieveUpdateDestroyAPIView):
 def get_reservas_cliente(request):
     if request.user.is_authenticated:
         reservas = Reservas.objects.filter(usuario=request.user)
-        serializer = ReservasSerializer(reservas, many=True)
+        serializer = ReservasSerializerAll(reservas, many=True)
         return Response(serializer.data)
     else:
         return Response(
@@ -1013,11 +1092,42 @@ def get_reservas_cliente(request):
         )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def reservas_encargado(request):
+    local = Locales.objects.get(id=request.user.id)
+    reservas = Reservas.objects.filter(local=local)
+    serializer = ReservasSerializerAll(reservas, many=True)
+    return Response(serializer.data)
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def delete_reserva(request, pk):
     try:
-        reserva = Reservas.objects.get(pk=pk, usuario=request.user)
-        if request.user.is_authenticated and reserva.fecha < timezone.now().date():
+        reserva = Reservas.objects.get(pk=pk, usuario=request.user.id)
+        if request.user.is_authenticated and (
+            reserva.fecha < timezone.now().date() or reserva.estado == 3
+        ):
+            reserva.delete()
+            return Response({"detail": "Reserva eliminada."}, status=200)
+        else:
+            return Response(
+                {
+                    "detail": "No puedes eliminar una reserva futura o no tienes permiso."
+                },
+                status=403,
+            )
+    except Reservas.DoesNotExist:
+        return Response({"detail": "Reserva no encontrada."}, status=404)
+
+
+@api_view(["DELETE"])
+def delete_reserva_as_local(request, pk):
+    try:
+        local = Locales.objects.get(usuario=request.user)
+        reserva = Reservas.objects.get(pk=pk, local=local)
+        if request.user.is_authenticated and (
+            reserva.fecha < timezone.now().date() or reserva.estado == 3
+        ):
             reserva.delete()
             return Response({"detail": "Reserva eliminada."}, status=200)
         else:

@@ -65,14 +65,17 @@ class TramosHorariosSerializer(serializers.ModelSerializer):
         fields = ['id', 'local', 'h_inicio', 'h_final', 'nombre', 'clientes_maximos']
 
 class ReservasSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializer
-    local = LocalesSerializer
-    tramo_horario = TramosHorariosSerializer
-
     class Meta:
         model = Reservas
-        fields = ['id', 'usuario', 'local', 'fecha', 'tramo_horario', 'hora', 'estado', 'numero_personas']
+        fields = ['id','usuario', 'local', 'fecha', 'hora', 'tramo_horario', 'estado', 'numero_personas']
 
+    def create(self, validated_data):
+        return Reservas.objects.create(**validated_data)
+class ReservasSerializerAll(serializers.ModelSerializer):
+    class Meta:
+        model = Reservas
+        fields = ['id','usuario', 'local', 'fecha', 'hora', 'tramo_horario', 'estado', 'numero_personas']
+        depth = 1
 class ComentariosSerializer(serializers.ModelSerializer):
     usuario = UsuariosSerializer
     local = LocalesSerializer

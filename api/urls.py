@@ -23,13 +23,15 @@ urlpatterns = [
     path('producto/<int:pk>/local/<int:local>', DetailedProductos.as_view(), name='productos-detail'),
     path('tramos_horarios', ListTramosHorarios.as_view(), name='tramos-horarios-list'),
     path('tramo_horario/<int:pk>/local/<int:local>', DetailedTramosHorarios.as_view(), name='tramos-horarios-detail'),
-    path('reservas', ListReservas.as_view(), name='reservas-list'),
+    path('reservas/local/<int:local>', get_reservas, name='reservas-list'),
+    path('reserva/crear', crear_reserva, name='reservas-create'),
     path('reserva/<int:pk>/local/<int:local>', DetailedReservas.as_view(), name='reservas-detail'),
     path('crear_comentarios/local/<int:local>', CrearComentario.as_view(), name='comentarios-list'),
     path('comentario/<int:pk>', DetailedComentarios.as_view(), name='comentarios-detail'),
     path('mis_reservas', get_reservas_cliente, name='mis-reservas'),
     path('cancelar_reserva/<int:pk>', cancelar_reserva, name='cancelar-reserva'),
     path('eliminar_reserva/<int:pk>', delete_reserva, name='eliminar-reserva'),
+    path('eliminar_reserva/local/<int:pk>', delete_reserva_as_local, name='eliminar-reserva'),
     path('mi_local', get_mi_local, name='mi-local'),
     path('eliminar_local/<int:id>', delete_local, name='eliminar-local'),
-]
+]  
