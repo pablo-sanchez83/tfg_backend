@@ -12,7 +12,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost', '127.0.0.1', 'tfg-frontend-pablo-sanchez83s-projects.vercel.app']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -55,10 +55,12 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 CORS_ALLOWED_ORIGINS = [
     'https://web-production-6e7ec.up.railway.app',
+    'https://tfg-frontend-pablo-sanchez83s-projects.vercel.app/'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://web-production-6e7ec.up.railway.app',
+    'https://tfg-frontend-pablo-sanchez83s-projects.vercel.app/'
 ]
 
 ROOT_URLCONF = 'backend.urls'
