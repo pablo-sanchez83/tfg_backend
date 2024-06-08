@@ -569,9 +569,8 @@ class DetailedEmpresas(generics.RetrieveUpdateDestroyAPIView):
             locales = Locales.objects.filter(empresa=empresa)
             for local in locales:
                 # Eliminar encargados asociados a los locales
-                encargados = Usuarios.objects.filter(locales=local)
-                for encargado in encargados:
-                    encargado.delete()
+                encargado = local.usuario
+                encargado.delete()
                 local.delete()
             empresa.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -619,7 +618,7 @@ class DetailedCategoriasCulinarias(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategoriasCulinariasSerializer
 
     def get_object(self):
-        return get_object_or_404(CategoriasCulinarias, id=self.kwargs["pk"])
+        return get_object_or_404(Categorias_Culinarias, id=self.kwargs["pk"])
 
     def delete(self, request, *args, **kwargs):
         if self.request.user.is_superuser:
