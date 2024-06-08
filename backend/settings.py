@@ -30,7 +30,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'web-production-6e7ec.up.railway.app']
+ALLOWED_HOSTS = ['*', 'web-production-6e7ec.up.railway.app']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api',
     'rest_framework',
-    'rest_framework.authtoken',
     'corsheaders',
 ]
 REST_FRAMEWORK = {
@@ -75,8 +74,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-     "http://localhost:5173",
-     "http://127.0.0.1:5173",
+     "http://*", "https://*",
  ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -106,9 +104,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        dj_database_url.config(env("DATABASE_URL")),
-    }
+    "default": dj_database_url.config(env("DATABASE_URL")),
 }
 
 
