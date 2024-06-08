@@ -28,7 +28,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', 'web-production-6e7ec.up.railway.app']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -109,8 +109,8 @@ DATABASES = {
         "NAME": env('DATABASE_NAME'),
         "USER": env('DATABASE_USER'),
         "PASSWORD": env('DATABASE_PASS'),
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+        "HOST": env('DATABASE_HOST'),
+        "PORT": env('DATABASE_PORT'),
     }
 }
 
