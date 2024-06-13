@@ -1,8 +1,6 @@
+import os
 from pathlib import Path
 import environ
-import os
-import dj_database_url
-from django.conf import settings  # Add this import
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,12 +8,7 @@ env = environ.Env()
 environ.Env.read_env()
 
 SECRET_KEY = env('SECRET_KEY')
-
-DEBUG = False
-
-if settings.DEBUG:
-    from django.conf.urls.static import static 
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost']
 
@@ -59,6 +52,7 @@ MIDDLEWARE = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
 
 WHITENOISE_USE_FINDERS = True
 
@@ -120,6 +114,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Asegurarse de agregar el manejo de archivos de medios en urlpatterns
+from django.conf.urls.static import static
+if not DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
