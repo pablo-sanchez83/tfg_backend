@@ -68,6 +68,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     'https://web-production-6e7ec.up.railway.app',
+    'https://eatbook.vercel.app'
 ]
 
 ROOT_URLCONF = 'backend.urls'
