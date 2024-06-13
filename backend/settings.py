@@ -52,7 +52,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://eatbook.vercel.app/*',
+    'https://eatbook.vercel.app',
     'https://web-production-6e7ec.up.railway.app'
 ]
 
