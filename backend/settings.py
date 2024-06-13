@@ -2,6 +2,7 @@ from pathlib import Path
 import environ
 import os
 import dj_database_url
+from django.conf import settings  # Add this import
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -13,6 +14,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = False
 
 if settings.DEBUG:
+    from django.conf.urls.static import static 
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost']
