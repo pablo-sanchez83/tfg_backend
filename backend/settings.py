@@ -12,7 +12,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost', '127.0.0.1', 'tfg-frontend-pablo-sanchez83s-projects.vercel.app', 'eatbook.vercel.app']
+ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic'
     'api',
     'rest_framework',
     'rest_framework.authtoken',
@@ -52,16 +53,14 @@ MIDDLEWARE = [
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CORS_ALLOWED_ORIGINS = [
-    'https://web-production-6e7ec.up.railway.app',
     'https://eatbook.vercel.app'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://web-production-6e7ec.up.railway.app',
-    'https://eatbook.vercel.app/*'
 ]
 
 ROOT_URLCONF = 'backend.urls'
