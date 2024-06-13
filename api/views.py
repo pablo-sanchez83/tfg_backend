@@ -745,8 +745,7 @@ class DetailedEmpresas(generics.RetrieveUpdateDestroyAPIView):
         ):
             locales = Locales.objects.filter(empresa=empresa)
             for local in locales:
-                # Eliminar encargados asociados a los locales
-                encargado = local.usuario
+                encargados = Usuarios.objects.filter(locales=local)
                 for encargado in encargados:
                     encargado.delete()
                 local.delete()
