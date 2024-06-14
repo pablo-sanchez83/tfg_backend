@@ -52,13 +52,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://eatbook.vercel.app',
-    'https://web-production-6e7ec.up.railway.app'
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-6e7ec.up.railway.app',
-    'http://localhost'
+    'https://eatbook.vercel.app'
 ]
 
 ROOT_URLCONF = 'backend.urls'
