@@ -11,7 +11,7 @@ environ.Env.read_env()
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = True
 
-ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app', 'localhost']
+ALLOWED_HOSTS = ['web-production-6e7ec.up.railway.app']
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -49,9 +49,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'backend.middleware.RefererControlMiddleware'
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    'https://eatbook.vercel.app'
+]
+CSRF_TRUSTED_ORIGINS = [
     'https://eatbook.vercel.app'
 ]
 
