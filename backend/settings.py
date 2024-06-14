@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 STATIC_URL = 'static/'
 
-STATICFILES_STORAGE = 'whitenoise.storage.ComppressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 LANGUAGE_CODE = 'en-us'
