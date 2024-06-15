@@ -21,6 +21,7 @@ urlpatterns = [
     path('productos', ListProductos.as_view(), name='productos-list'),
     path('producto/<int:pk>/local/<int:local>', DetailedProductos.as_view(), name='productos-detail'),
     path('tramos_horarios', ListTramosHorarios.as_view(), name='tramos-horarios-list'),
+    path('tramos_horarios/<int:local>', get_tramos_horarios_local, name='tramos-horarios-list'),
     path('tramo_horario/<int:pk>/local/<int:local>', DetailedTramosHorarios.as_view(), name='tramos-horarios-detail'),
     path('reservas/local/<int:local>', get_reservas, name='reservas-list'),
     path('reserva/crear', crear_reserva, name='reservas-create'),

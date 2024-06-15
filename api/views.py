@@ -674,6 +674,14 @@ class DetailedProductos(generics.RetrieveUpdateDestroyAPIView):
         else:
             raise PermissionDenied(GENERIC_ERROR)
 
+@api_view(["GET"])
+def get_tramos_horarios_local(request, local):
+    try:
+        local_obj = Locales.objects.get(id=local, usuario=request.user)
+        tramo_horario = Tramos_Horarios.objects.filter(local=local_obj)
+    except Tramos_Horarios.DoesNotExist:
+        raise JsonResponse({'Tramos horarios not exists'}, status=404)
+    return JsonResponse(tramo_horario, status=200)
 
 class DetailedTramosHorarios(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TramosHorariosSerializer
