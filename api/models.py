@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission, PermissionsMixin
 from django.core.validators import MaxLengthValidator, RegexValidator, MinLengthValidator
 from .managers import CustomUserManager
+from django_resized import ResizedImageField
 # Extender el modelo de usuario predeterminado
 
 class Usuarios(AbstractUser, PermissionsMixin):
@@ -75,7 +76,7 @@ class Horarios(models.Model):
 
 class Fotos_Locales(models.Model):
     local = models.ForeignKey(Locales, on_delete=models.CASCADE, related_name='fotos')
-    imagen = models.ImageField(upload_to='fotos_locales/')
+    imagen = ResizedImageField(force_format="WEBP", quality=50, upload_to='fotos_locales/')
 
 class Productos(models.Model):
     local = models.ForeignKey(Locales, on_delete=models.CASCADE, related_name='productos')
@@ -83,7 +84,7 @@ class Productos(models.Model):
     nombre_producto = models.CharField(max_length=100)
     descripcion = models.TextField()
     categoria = models.CharField(max_length=100, null=True)
-    imagen = models.ImageField(upload_to='productos_imagenes/')
+    imagen = ResizedImageField(force_format="WEBP", quality=50, upload_to='productos_imagenes/')
     def __str__(self):
         return self.nombre_producto + ' - ' + self.categoria
 
