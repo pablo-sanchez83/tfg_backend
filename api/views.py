@@ -681,7 +681,7 @@ def get_tramos_horarios_local(request, local):
         tramo_horario = Tramos_Horarios.objects.filter(local=local_obj)
     except Tramos_Horarios.DoesNotExist:
         raise JsonResponse({'Tramos horarios not exists'}, status=404)
-    return JsonResponse(tramo_horario, status=200)
+    return JsonResponse(tramo_horario, status)
 
 class DetailedTramosHorarios(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TramosHorariosSerializer
@@ -970,6 +970,50 @@ class ListHorarios(generics.ListCreateAPIView):
         else:
             serializer.save(local=local)
 
+class DetailedHorarios(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = HorariosSerializer
+
+    def get_object(self):
+        local_id = self.kwargs.get("local")
+        if local_id:
+            local = Locales.objects.get(id=local_id)
+            return get_object_or_404(Horarios, local=local, id=self.kwargs["pk"])
+        raise PermissionDenied(GENERIC_ERROR)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            self.get_object().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            if self.request.user.rol == 3:
+                local = Locales.objects.get(id=self.kwargs["local"])
+                if self.request.user == local.usuario:
+                    self.get_object().delete()
+                    return Response(status=status.HTTP_204_NO_CONTENT)
+                else:
+                    raise PermissionDenied(GENERIC_ERROR)
+            else:
+                raise PermissionDenied(GENERIC_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        if self.request.user.rol == 3:
+            local = Locales.objects.get(id=self.kwargs["local"])
+            if self.request.user == local.usuario:
+                return super().update(request, *args, **kwargs)
+            else:
+                raise PermissionDenied(GENERIC_ERROR)
+        else:
+            raise PermissionDenied(GENERIC_ERROR)
+
+    def patch(self, request, *args, **kwargs):
+        if self.request.user.rol == 3:
+            local = Locales.objects.get(id=self.kwargs["local"])
+            if self.request.user == local.usuario:
+                return super().partial_update(request, *args, **kwargs)
+            else:
+                raise PermissionDenied(GENERIC_ERROR)
+        else:
+            raise PermissionDenied(GENERIC_ERROR)
 
 class CrearLocales(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
