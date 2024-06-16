@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from api.views import *
+
 urlpatterns = [
     path('login', login),
     path('register', signup),
@@ -34,4 +35,4 @@ urlpatterns = [
     path('eliminar_reserva/local/<int:pk>', delete_reserva_as_local, name='eliminar-reserva'),
     path('mi_local', get_mi_local, name='mi-local'),
     path('eliminar_local/<int:id>', delete_local, name='eliminar-local'),
-]  
+]

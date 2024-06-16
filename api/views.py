@@ -14,7 +14,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
 
-GENERIC_ERROR = "No tienes permisos para realizar esta accion."
+GENERIC_ERROR = "No tienes permisos para realizar esta acción."
 
 
 # Autenticación
@@ -234,14 +234,14 @@ def get_mi_local(request):
                 {"detail": "Local no encontrado."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Retrieve related data
+        # Recuperar datos relacionados
         fotos = Fotos_Locales.objects.filter(local=local)
         productos = Productos.objects.filter(local=local)
         horarios = Horarios.objects.filter(local=local)
         tramos_horarios = Tramos_Horarios.objects.filter(local=local)
         comentarios = Comentarios.objects.filter(local=local)
 
-        # Prepare data for the response
+        # Preparar datos para la respuesta
         fotos_list = [{"id": foto.id, "imagen": foto.imagen.url} for foto in fotos]
         productos_list = [
             {
@@ -460,7 +460,7 @@ def cancelar_reserva(request, pk):
         else:
             return Response(
                 {
-                    "detail": "No puedes cancelar una reserva pasada o no tienes permiso."
+                    "detail": "No puedes cancelar una reserva pasada or no tienes permiso."
                 },
                 status=403,
             )
@@ -481,7 +481,7 @@ def delete_reserva(request, pk):
         else:
             return Response(
                 {
-                    "detail": "No puedes eliminar una reserva futura o no tienes permiso."
+                    "detail": "No puedes eliminar una reserva futura or no tienes permiso."
                 },
                 status=403,
             )
@@ -502,7 +502,7 @@ def delete_reserva_as_local(request, pk):
         else:
             return Response(
                 {
-                    "detail": "No puedes eliminar una reserva futura o no tienes permiso."
+                    "detail": "No puedes eliminar una reserva futura or no tienes permiso."
                 },
                 status=403,
             )
@@ -674,14 +674,16 @@ class DetailedProductos(generics.RetrieveUpdateDestroyAPIView):
         else:
             raise PermissionDenied(GENERIC_ERROR)
 
+
 @api_view(["GET"])
 def get_tramos_horarios_local(request, local):
     try:
         local_obj = Locales.objects.get(id=local, usuario=request.user)
         tramo_horario = Tramos_Horarios.objects.filter(local=local_obj)
     except Tramos_Horarios.DoesNotExist:
-        raise JsonResponse({'Tramos horarios not exists'}, status=404)
+        return JsonResponse({'Tramos horarios not exists'}, status=404)
     return JsonResponse(tramo_horario, status)
+
 
 class DetailedTramosHorarios(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TramosHorariosSerializer
@@ -791,14 +793,14 @@ def get_local(request, id):
     except Locales.DoesNotExist:
         return JsonResponse({"error": "Local not found"}, status=404)
 
-    # Retrieve related data
+    # Recuperar datos relacionados
     fotos = Fotos_Locales.objects.filter(local=local)
     productos = Productos.objects.filter(local=local)
     horarios = Horarios.objects.filter(local=local)
     tramos_horarios = Tramos_Horarios.objects.filter(local=local)
     comentarios = Comentarios.objects.filter(local=local, respuesta=False)
 
-    # Helper function to get nested responses
+    # Función auxiliar para obtener respuestas anidadas
     def get_respuestas(comentario):
         respuestas = Comentarios.objects.filter(respuesta_a=comentario)
         return [
@@ -814,7 +816,7 @@ def get_local(request, id):
             for respuesta in respuestas
         ]
 
-    # Prepare data for the response
+    # Preparar datos para la respuesta
     fotos_list = [{"id": foto.id, "imagen": foto.imagen.url} for foto in fotos]
     productos_list = [
         {
@@ -970,6 +972,7 @@ class ListHorarios(generics.ListCreateAPIView):
         else:
             serializer.save(local=local)
 
+
 class DetailedHorarios(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = HorariosSerializer
 
@@ -1014,6 +1017,7 @@ class DetailedHorarios(generics.RetrieveUpdateDestroyAPIView):
                 raise PermissionDenied(GENERIC_ERROR)
         else:
             raise PermissionDenied(GENERIC_ERROR)
+
 
 class CrearLocales(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
